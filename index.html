@@ -97,7 +97,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/%E7%AC%AC%E4%BA%8C%E5%91%A8%E8%BF%9B%E5%BA%A6/" data-id="cmeh1w2qq0003okq99bmjanmv" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/%E7%AC%AC%E4%BA%8C%E5%91%A8%E8%BF%9B%E5%BA%A6/" data-id="cmeh2hiff0003wbq93725dweu" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -135,47 +135,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/list/" data-id="cmeh1w2qn0001okq92lcy5m9r" data-title="todo" class="article-share-link"><span class="fa fa-share">Share</span></a>
-      
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-
-  
-    <article id="post-第一周进度" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
-  <div class="article-meta">
-    <a href="/2025/08/18/%E7%AC%AC%E4%B8%80%E5%91%A8%E8%BF%9B%E5%BA%A6/" class="article-date">
-  <time class="dt-published" datetime="2025-08-18T11:06:39.000Z" itemprop="datePublished">2025-08-18</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="p-name article-title" href="/2025/08/18/%E7%AC%AC%E4%B8%80%E5%91%A8%E8%BF%9B%E5%BA%A6/">第一周进展</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="e-content article-entry" itemprop="articleBody">
-      
-        <p>【20250805 - 20250810】<br>1.通信链路搭建<br>        · 使用Unix域套接字完成RouDi和发布者之间的通信。<br>        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。<br>2.构造与错误处理优化<br>        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create()接口统一创建对象。<br>        · 如果create()返回UnixDomainSocket本身，则需要依赖异常机制；为解决这个问题，引入了expected作为返回值：<br>                · 优点：避免异常的性能开销、保持错误处理的一致性、支持链式调用。<br>3.expected的实现与学习<br>        · 阅读LLVM - expected源码，自行实现了简化版本。<br>        · 在实现过程中掌握了：<br>                · [[no_unique_address]]的用途<br>                · 如何避免通用模板过度匹配的问题（万金油构造的贪婪性）<br>4.异常性能调研<br>        · 编写Demo测试异常的性能消耗，分析其汇编代码。<br>        · 了解-g编译引入的额外消耗。<br>        · 理解GCC异常栈展开以及throw的成本。</p>
-<p>Todo.<br>1.写一篇博客，解析-g和异常的性能消耗 - demo、现象、原因（汇编分析）、优化建议。<br>2.写一篇博客, 科普expected， 一方面讲解为什么需要expected, 一方面从实现切入，讲解基础的实现方法，以及进阶实现思路。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/%E7%AC%AC%E4%B8%80%E5%91%A8%E8%BF%9B%E5%BA%A6/" data-id="cmeh1w2qp0002okq98jglcj6u" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/list/" data-id="cmeh2hifb0001wbq9cm7l6w9y" data-title="todo" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -226,7 +186,47 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmeh1w2qh0000okq9dh35fyea" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmeh2hif40000wbq9ds75g8rb" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+</article>
+
+
+
+  
+    <article id="post-第一周进度" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/week1-progress/" class="article-date">
+  <time class="dt-published" datetime="2025-08-17T16:00:00.000Z" itemprop="datePublished">2025-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="p-name article-title" href="/week1-progress/">第一周进展</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>【20250805 - 20250810】<br>1.通信链路搭建<br>        · 使用Unix域套接字完成RouDi和发布者之间的通信。<br>        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。<br>2.构造与错误处理优化<br>        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create()接口统一创建对象。<br>        · 如果create()返回UnixDomainSocket本身，则需要依赖异常机制；为解决这个问题，引入了expected作为返回值：<br>                · 优点：避免异常的性能开销、保持错误处理的一致性、支持链式调用。<br>3.expected的实现与学习<br>        · 阅读LLVM - expected源码，自行实现了简化版本。<br>        · 在实现过程中掌握了：<br>                · [[no_unique_address]]的用途<br>                · 如何避免通用模板过度匹配的问题（万金油构造的贪婪性）<br>4.异常性能调研<br>        · 编写Demo测试异常的性能消耗，分析其汇编代码。<br>        · 了解-g编译引入的额外消耗。<br>        · 理解GCC异常栈展开以及throw的成本。</p>
+<p>Todo.<br>1.写一篇博客，解析-g和异常的性能消耗 - demo、现象、原因（汇编分析）、优化建议。<br>2.写一篇博客, 科普expected， 一方面讲解为什么需要expected, 一方面从实现切入，讲解基础的实现方法，以及进阶实现思路。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/week1-progress/" data-id="cmeh2hife0002wbq91ampd4s9" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -277,11 +277,11 @@
           </li>
         
           <li>
-            <a href="/2025/08/18/%E7%AC%AC%E4%B8%80%E5%91%A8%E8%BF%9B%E5%BA%A6/">第一周进展</a>
+            <a href="/2025/08/18/hello-world/">Hello World</a>
           </li>
         
           <li>
-            <a href="/2025/08/18/hello-world/">Hello World</a>
+            <a href="/week1-progress/">第一周进展</a>
           </li>
         
       </ul>
