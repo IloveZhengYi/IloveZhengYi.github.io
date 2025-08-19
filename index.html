@@ -93,36 +93,52 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>2025.08.11 ～ 2025.08.17 工作进度总结</p>
-<p>#【expected 类迁移与实现】</p>
-<p>本周将自己实现的 expected 类整合进项目。</p>
-<p>实现原理：<br>底层通过 union 存储两个模板参数对象，expected_storage 类负责管理构造和析构。</p>
-<p>遇到的主要问题与学习点：<br>  · 使用 [[no_unique_address]] 压缩存储空间<br>  · 赋值运算符保证异常安全<br>  · 利用类型萃取（type traits）优化不同模板类型：<br>  · POD 对象可忽略析构<br>  · 支持无异常移动的优先使用移动<br>  · 使用 static_assert 提升编译期报错友好性<br>  · 元编程判断操作是否可能抛出异常</p>
-<p>实践感受：<br>  · 为支持各种类型（只支持拷贝、只支持移动、都支持等），处理右值&#x2F;左值引用、move 与 forward、返回值是否带引用等问题时，调试和设计过程较为“憋屈”。</p>
-<p>为简化链式调用，与标准库API略有差异：标准库返回新的 expected 对象，而我返回自身引用。（在多重情况下有问题，比如并发……）</p>
-<p>【项目结构优化与编译配置】</p>
-<p>调整代码组织结构，使其与 Iceoryx 保持一致，采用多级 CMake 进行编译。</p>
-<p>收获：<br>1.小窥大型项目组织方式：<br>  · hoofs：存放业务无关代码（如封装的 IPC 类、expected 等）每个模块编译为静态库<br>  · posh：存放业务相关代码，业务代码通过链接调用库。<br>2.学习了库头文件暴露方式以及通过 interface 间接透传头文件</p>
-<p>待思考：<br>  · 是否需要将模块编译为动态库，以及动态&#x2F;静态库的利弊</p>
-<p>#【IPC 接口抽象】</p>
-<p>抽象了 ipc_interface_user&#x2F;creator 类用于控制 IPC channel 的创建与使用</p>
-<p>当前问题：<br>  · 强依赖 UnixDomainSocket，泛化 IPC 尚未实现</p>
-<p>可选思路：<br>  · 使用模板实现不同底层 IPC 的切换<br>  · 在编译期通过 CMake 指定底层实现（参考 Iceoryx 的做法）</p>
-<p>#【进程注册状态机】<br>Pub 端状态机流程已基本实现，分为四个状态：</p>
+        <h3 id="第二周工作总结-2025-08-11-～-2025-08-17"><a href="#第二周工作总结-2025-08-11-～-2025-08-17" class="headerlink" title="第二周工作总结 (2025.08.11 ～ 2025.08.17)"></a><strong>第二周工作总结 (2025.08.11 ～ 2025.08.17)</strong></h3><hr>
+<h4 id="1-expected-类迁移与实现"><a href="#1-expected-类迁移与实现" class="headerlink" title="1. expected 类迁移与实现"></a>1. <code>expected</code> 类迁移与实现</h4><p>本周我将自己实现的 <strong><code>expected</code> 类</strong>成功整合到项目中。该类的核心思想是利用 <code>union</code> 在底层存储两个模板参数对象，并由 <code>expected_storage</code> 类负责管理其构造与析构。</p>
+<p>在实现过程中，我遇到并解决了以下问题，并从中收获了宝贵的经验：</p>
+<ul>
+<li><strong>空间优化</strong>：使用 <code>[[no_unique_address]]</code> 属性，有效压缩了存储空间。</li>
+<li><strong>异常安全</strong>：确保赋值运算符的异常安全性。</li>
+<li><strong>类型优化</strong>：利用 <strong>类型萃取 (type traits)</strong> 机制，对不同模板类型进行优化，例如：<ul>
+<li>对于 <strong>POD</strong> 对象，可忽略析构操作。</li>
+<li>对于支持无异常移动的对象，优先使用移动语义。</li>
+</ul>
+</li>
+<li><strong>编译期检查</strong>：利用 <code>static_assert</code> 提升了编译期报错的友好性。</li>
+<li><strong>元编程</strong>：通过元编程判断操作是否可能抛出异常。</li>
+</ul>
+<p><strong>实践感受</strong>：<br>在处理右值&#x2F;左值引用、<code>move</code> 与 <code>forward</code>、以及返回值带引用等问题时，为了支持各种类型，整个调试和设计过程极具挑战性。为了简化链式调用，我的实现与标准库略有不同：标准库返回新的 <code>expected</code> 对象，而我返回自身引用。这个设计在多重并发等复杂场景下可能会引发问题，这一点值得深思。</p>
+<h4 id="2-项目结构优化与编译配置"><a href="#2-项目结构优化与编译配置" class="headerlink" title="2. 项目结构优化与编译配置"></a>2. 项目结构优化与编译配置</h4><p>我调整了项目的代码组织结构，使其与 Iceoryx 的多级 <strong>CMake</strong> 编译配置保持一致。</p>
+<p><strong>主要收获</strong>：</p>
+<ul>
+<li><strong>大型项目组织方式</strong>：初步了解了大型项目的模块化组织。例如，<code>hoofs</code> 模块存放与业务无关的代码（如 IPC 封装、<code>expected</code> 等），并编译为静态库；而 <code>posh</code> 模块存放业务相关代码，通过链接 <code>hoofs</code> 中的库来调用其功能。</li>
+<li><strong>库头文件管理</strong>：学习了库头文件的暴露方式，以及如何通过 <code>interface</code> 间接传递头文件。</li>
+</ul>
+<p><strong>待思考</strong>：<br>是否需要将模块编译为动态库？动态库与静态库的利弊是什么？</p>
+<h4 id="3-IPC-接口抽象"><a href="#3-IPC-接口抽象" class="headerlink" title="3. IPC 接口抽象"></a>3. IPC 接口抽象</h4><p>我抽象出了 <code>ipc_interface_user</code> 和 <code>creator</code> 类，用于控制 IPC channel 的创建与使用。</p>
+<p><strong>当前问题</strong>：<br>目前的实现强依赖于 <code>UnixDomainSocket</code>，尚未实现 IPC 接口的泛化。</p>
+<p><strong>可选思路</strong>：</p>
+<ul>
+<li><strong>模板化</strong>：使用模板实现不同底层 IPC 机制的切换。</li>
+<li><strong>编译期配置</strong>：参考 Iceoryx 的做法，在编译期通过 CMake 指定底层实现。</li>
+</ul>
+<h4 id="4-进程注册状态机"><a href="#4-进程注册状态机" class="headerlink" title="4. 进程注册状态机"></a>4. 进程注册状态机</h4><p>Pub 端的状态机流程已基本实现，分为以下四个状态：</p>
 <ol>
-<li>初始化：重新打开端口</li>
-<li>发送态：向 RouDi 发送注册信息（目前为 “hello world”）</li>
-<li>接收态：接收 RouDi 响应（目前为 “ye hello world”）</li>
-<li>结束态：完成注册流程</li>
+<li><strong>初始化</strong>：重新打开端口。</li>
+<li><strong>发送态</strong>：向 RouDi 发送注册信息（目前为 “hello world”）。</li>
+<li><strong>接收态</strong>：接收 RouDi 的响应（目前为 “ye hello world”）。</li>
+<li><strong>结束态</strong>：完成注册流程。</li>
 </ol>
-<p>#【TODO】</p>
-<p>1.expected是否需要继续完善？目测不用了。<br>2.cmake的调整<br>3.ipc的泛化</p>
-<p>#【NEXT】<br>实现进程注册流程</p>
+<hr>
+<h3 id="下周计划"><a href="#下周计划" class="headerlink" title="下周计划"></a><strong>下周计划</strong></h3><ul>
+<li>实现完整的进程注册流程，确保其稳定可靠。</li>
+<li>考虑 IPC 接口的泛化，初步评估两种可选方案的优劣。</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l70003klq98mm5b6n1" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmei0k77j000308q9cddkarrd" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -162,7 +178,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l40001klq9a23yao7z" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmei0k77g000108q91w8tdmj0" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -213,7 +229,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmehym9kx0000klq9fwl8eb6w" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmei0k77a000008q9hd8w3v8m" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -247,13 +263,39 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>【20250805 - 20250810】<br>1.通信链路搭建<br>        · 使用Unix域套接字完成RouDi和发布者之间的通信。<br>        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。<br>2.构造与错误处理优化<br>        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create()接口统一创建对象。<br>        · 如果create()返回UnixDomainSocket本身，则需要依赖异常机制；为解决这个问题，引入了expected作为返回值：<br>                · 优点：避免异常的性能开销、保持错误处理的一致性、支持链式调用。<br>3.expected的实现与学习<br>        · 阅读LLVM - expected源码，自行实现了简化版本。<br>        · 在实现过程中掌握了：<br>                · [[no_unique_address]]的用途<br>                · 如何避免通用模板过度匹配的问题（万金油构造的贪婪性）<br>4.异常性能调研<br>        · 编写Demo测试异常的性能消耗，分析其汇编代码。<br>        · 了解-g编译引入的额外消耗。<br>        · 理解GCC异常栈展开以及throw的成本。</p>
-<p>Todo.<br>1.写一篇博客，解析-g和异常的性能消耗 - demo、现象、原因（汇编分析）、优化建议。<br>2.写一篇博客, 科普expected， 一方面讲解为什么需要expected, 一方面从实现切入，讲解基础的实现方法，以及进阶实现思路。</p>
+        <h3 id="本周进展（20250805-20250810）"><a href="#本周进展（20250805-20250810）" class="headerlink" title="本周进展（20250805 - 20250810）"></a><strong>本周进展（20250805 - 20250810）</strong></h3><hr>
+<h4 id="1-通信链路搭建"><a href="#1-通信链路搭建" class="headerlink" title="1. 通信链路搭建"></a>1. 通信链路搭建</h4><p>完成了 <strong>Unix 域套接字</strong>（Unix Domain Socket）在 RouDi 和发布者之间的通信链路搭建。</p>
+<ul>
+<li>抽象出 <code>UnixDomainSocket</code> 类，并采用 <strong>RAII</strong>（Resource Acquisition Is Initialization）原则管理套接字生命周期，确保资源自动释放。</li>
+</ul>
+<h4 id="2-构造与错误处理优化"><a href="#2-构造与错误处理优化" class="headerlink" title="2. 构造与错误处理优化"></a>2. 构造与错误处理优化</h4><p>为避免在 <code>UnixDomainSocket</code> 构造函数中直接抛出异常，我引入了 <code>UnixDomainSocketBuilder</code>。</p>
+<ul>
+<li>提供了 <code>create()</code> 接口来统一创建对象。</li>
+<li>为了解决 <code>create()</code> 返回对象本身时依赖异常机制的问题，我引入了 <strong><code>expected</code></strong> 作为返回值。<ul>
+<li><strong>优点</strong>：避免异常的性能开销，保持错误处理的一致性，并支持链式调用。</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-expected-的实现与学习"><a href="#3-expected-的实现与学习" class="headerlink" title="3. expected 的实现与学习"></a>3. <code>expected</code> 的实现与学习</h4><p>通过阅读 LLVM <code>expected</code> 源码，我成功实现了一个简化版本，并从中掌握了以下关键知识点：</p>
+<ul>
+<li><code>[[no_unique_address]]</code> 的用途。</li>
+<li>如何避免<strong>通用模板过度匹配</strong>（“万金油构造”）的问题。</li>
+</ul>
+<h4 id="4-异常性能调研"><a href="#4-异常性能调研" class="headerlink" title="4. 异常性能调研"></a>4. 异常性能调研</h4><p>我编写了一个 Demo 来测试异常的性能消耗，并通过分析其汇编代码，深入了解了以下内容：</p>
+<ul>
+<li><code>-g</code> 编译选项引入的额外消耗。</li>
+<li>GCC 异常栈展开及 <code>throw</code> 操作的成本。</li>
+</ul>
+<hr>
+<h3 id="待办事项-Todo"><a href="#待办事项-Todo" class="headerlink" title="待办事项 (Todo)"></a><strong>待办事项 (Todo)</strong></h3><ul>
+<li><strong>博客文章一</strong>：撰写一篇博客，详细解析 <code>-g</code> 编译选项和异常的性能消耗。内容将涵盖 Demo 代码、现象、原因（基于汇编分析）以及优化建议。</li>
+<li><strong>博客文章二</strong>：撰写一篇关于 <code>expected</code> 的科普博客。一方面解释为什么需要 <code>expected</code>，另一方面从实现角度讲解其基础方法和进阶思路。</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l60002klq92jwvcc5b" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmei0k77i000208q9ge60ds6h" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

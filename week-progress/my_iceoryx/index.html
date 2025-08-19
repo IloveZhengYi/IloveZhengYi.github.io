@@ -6,15 +6,15 @@
   
   <title>第一周进展 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="【20250805 - 20250810】1.通信链路搭建        · 使用Unix域套接字完成RouDi和发布者之间的通信。        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。2.构造与错误处理优化        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create">
+  <meta name="description" content="本周进展（20250805 - 20250810） 1. 通信链路搭建完成了 Unix 域套接字（Unix Domain Socket）在 RouDi 和发布者之间的通信链路搭建。  抽象出 UnixDomainSocket 类，并采用 RAII（Resource Acquisition Is Initialization）原则管理套接字生命周期，确保资源自动释放。  2. 构造与错误处理优化为避">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第一周进展">
 <meta property="og:url" content="http://example.com/week-progress/my_iceoryx/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="【20250805 - 20250810】1.通信链路搭建        · 使用Unix域套接字完成RouDi和发布者之间的通信。        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。2.构造与错误处理优化        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create">
+<meta property="og:description" content="本周进展（20250805 - 20250810） 1. 通信链路搭建完成了 Unix 域套接字（Unix Domain Socket）在 RouDi 和发布者之间的通信链路搭建。  抽象出 UnixDomainSocket 类，并采用 RAII（Resource Acquisition Is Initialization）原则管理套接字生命周期，确保资源自动释放。  2. 构造与错误处理优化为避">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-08-17T16:00:00.000Z">
-<meta property="article:modified_time" content="2025-08-19T01:47:30.780Z">
+<meta property="article:modified_time" content="2025-08-19T03:58:09.175Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -95,13 +95,39 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>【20250805 - 20250810】<br>1.通信链路搭建<br>        · 使用Unix域套接字完成RouDi和发布者之间的通信。<br>        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。<br>2.构造与错误处理优化<br>        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create()接口统一创建对象。<br>        · 如果create()返回UnixDomainSocket本身，则需要依赖异常机制；为解决这个问题，引入了expected作为返回值：<br>                · 优点：避免异常的性能开销、保持错误处理的一致性、支持链式调用。<br>3.expected的实现与学习<br>        · 阅读LLVM - expected源码，自行实现了简化版本。<br>        · 在实现过程中掌握了：<br>                · [[no_unique_address]]的用途<br>                · 如何避免通用模板过度匹配的问题（万金油构造的贪婪性）<br>4.异常性能调研<br>        · 编写Demo测试异常的性能消耗，分析其汇编代码。<br>        · 了解-g编译引入的额外消耗。<br>        · 理解GCC异常栈展开以及throw的成本。</p>
-<p>Todo.<br>1.写一篇博客，解析-g和异常的性能消耗 - demo、现象、原因（汇编分析）、优化建议。<br>2.写一篇博客, 科普expected， 一方面讲解为什么需要expected, 一方面从实现切入，讲解基础的实现方法，以及进阶实现思路。</p>
+        <h3 id="本周进展（20250805-20250810）"><a href="#本周进展（20250805-20250810）" class="headerlink" title="本周进展（20250805 - 20250810）"></a><strong>本周进展（20250805 - 20250810）</strong></h3><hr>
+<h4 id="1-通信链路搭建"><a href="#1-通信链路搭建" class="headerlink" title="1. 通信链路搭建"></a>1. 通信链路搭建</h4><p>完成了 <strong>Unix 域套接字</strong>（Unix Domain Socket）在 RouDi 和发布者之间的通信链路搭建。</p>
+<ul>
+<li>抽象出 <code>UnixDomainSocket</code> 类，并采用 <strong>RAII</strong>（Resource Acquisition Is Initialization）原则管理套接字生命周期，确保资源自动释放。</li>
+</ul>
+<h4 id="2-构造与错误处理优化"><a href="#2-构造与错误处理优化" class="headerlink" title="2. 构造与错误处理优化"></a>2. 构造与错误处理优化</h4><p>为避免在 <code>UnixDomainSocket</code> 构造函数中直接抛出异常，我引入了 <code>UnixDomainSocketBuilder</code>。</p>
+<ul>
+<li>提供了 <code>create()</code> 接口来统一创建对象。</li>
+<li>为了解决 <code>create()</code> 返回对象本身时依赖异常机制的问题，我引入了 <strong><code>expected</code></strong> 作为返回值。<ul>
+<li><strong>优点</strong>：避免异常的性能开销，保持错误处理的一致性，并支持链式调用。</li>
+</ul>
+</li>
+</ul>
+<h4 id="3-expected-的实现与学习"><a href="#3-expected-的实现与学习" class="headerlink" title="3. expected 的实现与学习"></a>3. <code>expected</code> 的实现与学习</h4><p>通过阅读 LLVM <code>expected</code> 源码，我成功实现了一个简化版本，并从中掌握了以下关键知识点：</p>
+<ul>
+<li><code>[[no_unique_address]]</code> 的用途。</li>
+<li>如何避免<strong>通用模板过度匹配</strong>（“万金油构造”）的问题。</li>
+</ul>
+<h4 id="4-异常性能调研"><a href="#4-异常性能调研" class="headerlink" title="4. 异常性能调研"></a>4. 异常性能调研</h4><p>我编写了一个 Demo 来测试异常的性能消耗，并通过分析其汇编代码，深入了解了以下内容：</p>
+<ul>
+<li><code>-g</code> 编译选项引入的额外消耗。</li>
+<li>GCC 异常栈展开及 <code>throw</code> 操作的成本。</li>
+</ul>
+<hr>
+<h3 id="待办事项-Todo"><a href="#待办事项-Todo" class="headerlink" title="待办事项 (Todo)"></a><strong>待办事项 (Todo)</strong></h3><ul>
+<li><strong>博客文章一</strong>：撰写一篇博客，详细解析 <code>-g</code> 编译选项和异常的性能消耗。内容将涵盖 Demo 代码、现象、原因（基于汇编分析）以及优化建议。</li>
+<li><strong>博客文章二</strong>：撰写一篇关于 <code>expected</code> 的科普博客。一方面解释为什么需要 <code>expected</code>，另一方面从实现角度讲解其基础方法和进阶思路。</li>
+</ul>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l60002klq92jwvcc5b" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmei0k77i000208q9ge60ds6h" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
