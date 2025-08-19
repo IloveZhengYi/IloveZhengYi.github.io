@@ -93,11 +93,36 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <p>2025.08.11 ～ 2025.08.17 工作进度总结</p>
+<p>#【expected 类迁移与实现】</p>
+<p>本周将自己实现的 expected 类整合进项目。</p>
+<p>实现原理：<br>底层通过 union 存储两个模板参数对象，expected_storage 类负责管理构造和析构。</p>
+<p>遇到的主要问题与学习点：<br>  · 使用 [[no_unique_address]] 压缩存储空间<br>  · 赋值运算符保证异常安全<br>  · 利用类型萃取（type traits）优化不同模板类型：<br>  · POD 对象可忽略析构<br>  · 支持无异常移动的优先使用移动<br>  · 使用 static_assert 提升编译期报错友好性<br>  · 元编程判断操作是否可能抛出异常</p>
+<p>实践感受：<br>  · 为支持各种类型（只支持拷贝、只支持移动、都支持等），处理右值&#x2F;左值引用、move 与 forward、返回值是否带引用等问题时，调试和设计过程较为“憋屈”。</p>
+<p>为简化链式调用，与标准库API略有差异：标准库返回新的 expected 对象，而我返回自身引用。（在多重情况下有问题，比如并发……）</p>
+<p>【项目结构优化与编译配置】</p>
+<p>调整代码组织结构，使其与 Iceoryx 保持一致，采用多级 CMake 进行编译。</p>
+<p>收获：<br>1.小窥大型项目组织方式：<br>  · hoofs：存放业务无关代码（如封装的 IPC 类、expected 等）每个模块编译为静态库<br>  · posh：存放业务相关代码，业务代码通过链接调用库。<br>2.学习了库头文件暴露方式以及通过 interface 间接透传头文件</p>
+<p>待思考：<br>  · 是否需要将模块编译为动态库，以及动态&#x2F;静态库的利弊</p>
+<p>#【IPC 接口抽象】</p>
+<p>抽象了 ipc_interface_user&#x2F;creator 类用于控制 IPC channel 的创建与使用</p>
+<p>当前问题：<br>  · 强依赖 UnixDomainSocket，泛化 IPC 尚未实现</p>
+<p>可选思路：<br>  · 使用模板实现不同底层 IPC 的切换<br>  · 在编译期通过 CMake 指定底层实现（参考 Iceoryx 的做法）</p>
+<p>#【进程注册状态机】<br>Pub 端状态机流程已基本实现，分为四个状态：</p>
+<ol>
+<li>初始化：重新打开端口</li>
+<li>发送态：向 RouDi 发送注册信息（目前为 “hello world”）</li>
+<li>接收态：接收 RouDi 响应（目前为 “ye hello world”）</li>
+<li>结束态：完成注册流程</li>
+</ol>
+<p>#【TODO】</p>
+<p>1.expected是否需要继续完善？目测不用了。<br>2.cmake的调整<br>3.ipc的泛化</p>
+<p>#【NEXT】<br>实现进程注册流程</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehyg74r000379q90exy0a5f" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l70003klq98mm5b6n1" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -131,11 +156,13 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <p>【第一周】<br>为了学习更加深入，在实现“进程注册”这个核心功能时，可以多思考以下几个问题：<br>  · 设计模式的应用： 在 iceoryx 中，进程注册模块是如何组织代码的？有没有用到一些设计模式（如单例、工厂等），为什么？<br>  · 并发与同步： 进程注册通常涉及到多个进程同时访问一个共享资源（如注册表）。iceoryx 是如何处理并发访问和同步问题的？是使用了锁、无锁算法还是其他机制？<br>  · 健壮性与容错： 如果一个进程在注册过程中崩溃了，iceoryx 是如何处理的？注册信息是否会被清理？这部分你是如何考虑的？</p>
+<p>【第二周】<br>下周可以重点关注以下几点：<br>  · 继续完善 expected 的实现，如果你对某个细节感到“憋屈”，那正是你学习的突破口。<br>  · 深入研究 iceoryx 的 CMake 文件，学习它如何管理依赖、如何通过配置选项选择不同的后端实现。<br>  · 开始尝试实现 roudi 端对进程注册的逻辑，并将你的状态机与 roudi 的状态机进行对接。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehyg74n000179q9ag8sa6s1" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l40001klq9a23yao7z" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -186,7 +213,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmehyg74h000079q9bauidlqp" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmehym9kx0000klq9fwl8eb6w" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -226,7 +253,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehyg74q000279q9ek0obdpo" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/" data-id="cmehym9l60002klq92jwvcc5b" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
