@@ -4,15 +4,17 @@
   <meta charset="utf-8">
   
   
-  <title>todo | Hexo</title>
+  <title>第一周进展 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta property="og:type" content="article">
-<meta property="og:title" content="todo">
-<meta property="og:url" content="http://example.com/week-progress/index.html">
+  <meta name="description" content="【20250805 - 20250810】1.通信链路搭建        · 使用Unix域套接字完成RouDi和发布者之间的通信。        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。2.构造与错误处理优化        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第一周进展">
+<meta property="og:url" content="http://example.com/week-progress/w1">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="【20250805 - 20250810】1.通信链路搭建        · 使用Unix域套接字完成RouDi和发布者之间的通信。        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。2.构造与错误处理优化        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2025-08-18T11:08:56.000Z">
-<meta property="article:modified_time" content="2025-08-18T12:06:01.005Z">
+<meta property="article:published_time" content="2025-08-17T16:00:00.000Z">
+<meta property="article:modified_time" content="2025-08-19T01:35:11.860Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -71,10 +73,10 @@
 </header>
 
       <div class="outer">
-        <section id="main"><article id="post-list" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+        <section id="main"><article id="post-第一周进度" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
   <div class="article-meta">
-    <a href="/week-progress/" class="article-date">
-  <time class="dt-published" datetime="2025-08-18T11:08:56.000Z" itemprop="datePublished">2025-08-18</time>
+    <a href="/week-progress/w1" class="article-date">
+  <time class="dt-published" datetime="2025-08-17T16:00:00.000Z" itemprop="datePublished">2025-08-18</time>
 </a>
     
   </div>
@@ -85,7 +87,7 @@
         
   
     <h1 class="p-name article-title" itemprop="headline name">
-      todo
+      第一周进展
     </h1>
   
 
@@ -93,11 +95,13 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        
+        <p>【20250805 - 20250810】<br>1.通信链路搭建<br>        · 使用Unix域套接字完成RouDi和发布者之间的通信。<br>        · 抽象出UnixDomainSocket类，采用RAII管理套接字生命周期。<br>2.构造与错误处理优化<br>        · 为避免在UnixDomainSocket构造函数中直接抛出异常，引入UnixDomainSocketBuilder，提供create()接口统一创建对象。<br>        · 如果create()返回UnixDomainSocket本身，则需要依赖异常机制；为解决这个问题，引入了expected作为返回值：<br>                · 优点：避免异常的性能开销、保持错误处理的一致性、支持链式调用。<br>3.expected的实现与学习<br>        · 阅读LLVM - expected源码，自行实现了简化版本。<br>        · 在实现过程中掌握了：<br>                · [[no_unique_address]]的用途<br>                · 如何避免通用模板过度匹配的问题（万金油构造的贪婪性）<br>4.异常性能调研<br>        · 编写Demo测试异常的性能消耗，分析其汇编代码。<br>        · 了解-g编译引入的额外消耗。<br>        · 理解GCC异常栈展开以及throw的成本。</p>
+<p>Todo.<br>1.写一篇博客，解析-g和异常的性能消耗 - demo、现象、原因（汇编分析）、优化建议。<br>2.写一篇博客, 科普expected， 一方面讲解为什么需要expected, 一方面从实现切入，讲解基础的实现方法，以及进阶实现思路。</p>
+
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/" data-id="cmehva4ah0001vjq9cbc92szb" data-title="todo" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/w1" data-id="cmehvhmpb0002hsq9dwyg4fcv" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -107,20 +111,15 @@
     
 <nav id="article-nav">
   
-    <a href="/week-progress/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2025/08/18/hello-world/" id="article-nav-newer" class="article-nav-link-wrap">
       <strong class="article-nav-caption">Newer</strong>
       <div class="article-nav-title">
         
-          第二周进度
+          Hello World
         
       </div>
     </a>
   
-  
-    <a href="/2025/08/18/hello-world/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
-      <div class="article-nav-title">Hello World</div>
-    </a>
   
 </nav>
 
@@ -157,11 +156,11 @@
       <ul>
         
           <li>
-            <a href="/week-progress/">第二周进度</a>
+            <a href="/week-progress/w2">第二周进度</a>
           </li>
         
           <li>
-            <a href="/week-progress/">todo</a>
+            <a href="/week-progress/list">list</a>
           </li>
         
           <li>
@@ -169,7 +168,7 @@
           </li>
         
           <li>
-            <a href="/week1-progress/">第一周进展</a>
+            <a href="/week-progress/w1">第一周进展</a>
           </li>
         
       </ul>
