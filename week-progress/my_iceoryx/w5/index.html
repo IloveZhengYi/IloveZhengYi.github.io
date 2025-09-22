@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>第五周进度 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="【2025.09.15 ～ 2025.09.21】 复刻进度总结 当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。 1.进程注册· 实现：        · roudi维护了一个进程集合。（这个不存储在共享内存中）        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。                · 若存在，说明旧进程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第五周进度">
+<meta property="og:url" content="http://example.com/week-progress/my_iceoryx/w5/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="【2025.09.15 ～ 2025.09.21】 复刻进度总结 当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。 1.进程注册· 实现：        · roudi维护了一个进程集合。（这个不存储在共享内存中）        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。                · 若存在，说明旧进程">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-08-18T11:09:37.000Z">
+<meta property="article:modified_time" content="2025-09-22T08:33:57.145Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-w5" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/week-progress/my_iceoryx/w5/" class="article-date">
+  <time class="dt-published" datetime="2025-08-18T11:09:37.000Z" itemprop="datePublished">2025-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      第五周进度
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <p>【2025.09.15 ～ 2025.09.21】 复刻进度总结</p>
+<p>当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。</p>
+<p>1.进程注册<br>· 实现：<br>        · roudi维护了一个进程集合。（这个不存储在共享内存中）<br>        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。<br>                · 若存在，说明旧进程重启了，需要先执行清理操作（目前没有XD，应该还不需要…，但是我象征性的先删除&#x3D;。&#x3D;），再加入集合。</p>
+<p>2.内存分块细分<br>· 我的实现：<br>        · pub&#x2F;sub不直接感知共享内存名<br>        · 注册阶段，roudi通过ipc返回 sgementId -&gt; shmName的映射关系。<br>        Ps：这不是完全解偶吗？<br>· Iceoryx设计：<br>        · 所有映射关系存储在一个指定的共享内存中，该共享内存由“managment” + 域名拼接而成<br>        · pub&#x2F;sub注册后，从该共享内存直接读取映射关系。<br>· FromAI：<br>        ·我的方案：<br>                · 优点：解偶 + 简单<br>                · 缺点：<br>                        · IPC开销：伴随着进程数量的增加，IPC可能成为性能瓶颈。<br>                        · 实时性和一致性：如果roudi重启，所有客户端需要重新获取映射关系，并且通过IPC映射信息，保证即使最新、一致。<br>        · iceoryx设计：<br>                · 优点：（好呀，好呀，只说优点是吧）<br>                        · 极致性能：一旦客户端通过IPC注册成功，它可以直接从共享内存中读取所有映射关系，无需再次通信。共享内存的速度远远快于IPC。<br>                        · 伸缩性：性能不会随着进程数的增加而降低。<br>                        · 状态一致性：天然的状态一致性。        &#x2F;&#x2F; 这个应该不会体现吧，因为Iceoryx好像不会动态变化吧，roudi重启，会怎么样呢？</p>
+<p>3.共享内存注册<br>该模块主要包含两个核心功能：<br>（1） SharedMemoryUser类<br>· 功能：pub&#x2F;sub通过该类构建共享内存映射关系<br>· 改进：<br>        · 自己实现的SharedMemoryUser接口和作用与Iceoryx还是又差别的，我觉得一方面是因为源码设计优秀，一方面我认为是我有的功能还没有实现。不过我能理解Iceoryx这么设计的原因。<br>        · 在之前共享内存相关类中增加了AccessMode和OpenMode参数，代码复用性显著提升。<br>        · 实现了简易的ScopeGuard（RAII）<br>                · 功能：用于在函数退出前优雅的执行清理逻辑<br>                · 优点：<br>                        · 减少代码冗余<br>                        · 避免遗漏关键操作<br>                · 思考：<br>                        · Iceoryx的ScopeGuard基于栈分配，这不是唯一一个栈分配，设计很高效。todo. 等我核心流程跑通后，我将研究该细节。<br>（2） 指针仓库<br>        · 功能：维护 segmentId -&gt; shm 的映射关系，用于统一管理已打开的共享内存，避免重复映射？<br>        · 接口返回值抉择的思考：<br>                · bool：用于简单的，错误分支有限的场景。<br>                · optional：用于”有或无”的返回值（比如返回类的指针成员？）<br>                · expected：适用于有多种错误，并需要返回详细错误的情况。<br>        · 思考：<br>                · 为什么引入 segmentId ？直接通过名字有什么问题吗？应该都行吧。<br>                From AI：<br>                        · 解偶，如果底层实现从共享内存切换到其他IPC机制时，segmentId仍可作为统一的标识符，无需修改上层代码。<br>                        · 简化：整数ID比处理一个冗长的文件名简单<br>                        · 安全：特殊字符、攻击、伪造&#x2F;冲突。<br>4.todo<br>· 在每一个chunk中，引入内存池。<br>· 设计pub&#x2F;sub信息存储方案，确保后续匹配与注销操作高效与可扩展。<br>Ps：虽然整理架构已清晰，但感觉“差的不多，又差很多”😂，争取本月完成注册模块。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/week-progress/my_iceoryx/w5/" data-id="cmfuvh8nf00079zq9cptlcuyb" data-title="第五周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/week-progress/my_iceoryx/w4/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          第四周进度
+        
+      </div>
+    </a>
+  
+  
+    <a href="/problem/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">list</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/08/">August 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w2/">第二周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w3/">第三周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w4/">第四周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w5/">第五周进度</a>
+          </li>
+        
+          <li>
+            <a href="/problem/">list</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>

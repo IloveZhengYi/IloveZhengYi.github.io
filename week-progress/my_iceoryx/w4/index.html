@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  
+  <title>第四周进度 | Hexo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="【2025.09.08 ~ 2025.09.12】1.共享内存的创建与封装 · 我的实现：将共享内存的创建与映射逻辑封装到一个类中· Iceoryx实现：分为 PosixSharedMemory (创建共享内存) 和 PosixMemoryMap (mmap), 再通过 PosixSharedMemoryObject 组合两者· 对比与思考    · 可重用性更好：如果需要新增 file+mmap">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第四周进度">
+<meta property="og:url" content="http://example.com/week-progress/my_iceoryx/w4/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="【2025.09.08 ~ 2025.09.12】1.共享内存的创建与封装 · 我的实现：将共享内存的创建与映射逻辑封装到一个类中· Iceoryx实现：分为 PosixSharedMemory (创建共享内存) 和 PosixMemoryMap (mmap), 再通过 PosixSharedMemoryObject 组合两者· 对比与思考    · 可重用性更好：如果需要新增 file+mmap">
+<meta property="og:locale" content="en_US">
+<meta property="article:published_time" content="2025-08-18T11:09:37.000Z">
+<meta property="article:modified_time" content="2025-09-22T08:32:56.278Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary">
+  
+    <link rel="alternate" href="/atom.xml" title="Hexo" type="application/atom+xml">
+  
+  
+    <link rel="shortcut icon" href="/favicon.png">
+  
+  
+  
+<link rel="stylesheet" href="/css/style.css">
+
+  
+    
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.min.css">
+
+  
+  
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fork-awesome@1.2.0/css/fork-awesome.min.css">
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/" id="logo">Hexo</a>
+      </h1>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"><span class="fa fa-bars"></span></a>
+        
+          <a class="main-nav-link" href="/">Home</a>
+        
+          <a class="main-nav-link" href="/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+        
+          <a class="nav-icon" href="/atom.xml" title="RSS Feed"><span class="fa fa-rss"></span></a>
+        
+        <a class="nav-icon nav-search-btn" title="Search"><span class="fa fa-search"></span></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://example.com"></form>
+      </div>
+    </div>
+  </div>
+</header>
+
+      <div class="outer">
+        <section id="main"><article id="post-w4" class="h-entry article article-type-post" itemprop="blogPost" itemscope itemtype="https://schema.org/BlogPosting">
+  <div class="article-meta">
+    <a href="/week-progress/my_iceoryx/w4/" class="article-date">
+  <time class="dt-published" datetime="2025-08-18T11:09:37.000Z" itemprop="datePublished">2025-08-18</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="p-name article-title" itemprop="headline name">
+      第四周进度
+    </h1>
+  
+
+      </header>
+    
+    <div class="e-content article-entry" itemprop="articleBody">
+      
+        <h2 id="【2025-09-08-2025-09-12】"><a href="#【2025-09-08-2025-09-12】" class="headerlink" title="【2025.09.08 ~ 2025.09.12】"></a>【2025.09.08 ~ 2025.09.12】</h2><p>1.共享内存的创建与封装</p>
+<p>· 我的实现：将共享内存的创建与映射逻辑封装到一个类中<br>· Iceoryx实现：分为 PosixSharedMemory (创建共享内存) 和 PosixMemoryMap (mmap), 再通过 PosixSharedMemoryObject 组合两者<br>· 对比与思考<br>    · 可重用性更好：如果需要新增 file+mmap 实现，只需要增加一个 PosixFileManager 用于文件创建与管理, 再新增 PosixFileMemory 组合 PosixFileManager 和 PosixMemoryMap 即可。<br>    · 资源管理更安全：如果将整个逻辑放在一个类中，如果 mmap 失败需要手动调用 shm_unlink, 但 Iceoryx 借助 RAII 可以在 PosixMemoryMap 创建时候后自动关闭</p>
+<p>2.内存分块及管理</p>
+<p>· 实现思路：借鉴 Iceoryx, 抽象出:<br>    · MemoryManager: 统一内存管理类<br>    · MemoryProvider: 内存分配器 (shm, file, …)<br>    · MemoryBlock: 具体内存块 (可对应具体的功能块: 心跳区, 数据区…)<br>· 思考<br>    · 可扩展性好<br>    · 动态设计合理:<br>        · MemoryManager 内存保存 MemoryProvider * 数组, 不同 MemoryProvider 可以通过多态采用不同的分配策略 (shm+mmap, file+mmap)<br>        · MemoryProvider 内存保存 MemoryBlock * 数组, 也可以扩展为不同特性的 MemoryBlock<br>    · 命名与职责划分思考: 共享内存文件名的组装应该放到 Provider 中,而不是在 PosixSharedMemoryObject&#x2F;PosixSharedMemory&#x2F;PosixMemoryMap 中<br>    · MemoryProvider 使用了模板方法模型,将算法的流程和具体实现分离，比如：<br>        · Create 是一个共有接口，这里函数实现了具体内存创建和分块的主要流程。<br>        · CreateMemory 是一个纯虚函数，子类实现具体的内存创建逻辑，可能是 shm+mmap, 可能是 file+mmap…<br>        · Create 中会调用 CreateMemory<br>    &#x2F;&#x2F; 我感觉这也是希望尽可能保证代码复用吧.</p>
+<p>3.expected类优化</p>
+<p>· 新增以下功能:<br>    · operator -&gt;<br>    · operator *<br>    · has_error()<br>    · bool 转换<br>· 下一步计划: 增加 ok&#x2F;err 包装类可更方便的使用 expected 以及可读性</p>
+<p>4.C++新知识点</p>
+<p>· 理解了 std::addressof 和 &amp; 的区别:<br>    · &amp; 可以被重载,不一定能获取对象的真实地址.<br>    · std::address_of 始终能获取对象的真实地址.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://example.com/week-progress/my_iceoryx/w4/" data-id="cmfuvh8nf00069zq9bc3kgbi4" data-title="第四周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      
+      
+      
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/week-progress/my_iceoryx/w3/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Newer</strong>
+      <div class="article-nav-title">
+        
+          第三周进度
+        
+      </div>
+    </a>
+  
+  
+    <a href="/week-progress/my_iceoryx/w5/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">第五周进度</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+
+  
+    
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2025/08/">August 2025</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w2/">第二周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w3/">第三周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w4/">第四周进度</a>
+          </li>
+        
+          <li>
+            <a href="/week-progress/my_iceoryx/w5/">第五周进度</a>
+          </li>
+        
+          <li>
+            <a href="/problem/">list</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      
+      &copy; 2025 John Doe<br>
+      Powered by <a href="https://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/" class="mobile-nav-link">Home</a>
+  
+    <a href="/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+
+<script src="/js/jquery-3.6.4.min.js"></script>
+
+
+
+  
+<script src="/fancybox/jquery.fancybox.min.js"></script>
+
+
+
+
+<script src="/js/script.js"></script>
+
+
+
+
+
+  </div>
+</body>
+</html>
