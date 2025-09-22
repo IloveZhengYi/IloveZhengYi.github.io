@@ -6,15 +6,15 @@
   
   <title>第五周进度 | Hexo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <meta name="description" content="【2025.09.15 ～ 2025.09.21】 复刻进度总结 当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。 1.进程注册· 实现：        · roudi维护了一个进程集合。（这个不存储在共享内存中）        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。                · 若存在，说明旧进程">
+  <meta name="description" content="【2025.09.15 ～ 2025.09.21】Iceoryx 复刻进度总结 当前目标：聚焦 注册模块 的实现，围绕 进程注册、内存分块细化、共享内存注册 三个方向推进。   1️⃣ 进程注册✅ 实现 进程集合维护   roudi 维护一个进程集合（不存储在共享内存中）。   pub&#x2F;sub 初始化时会上报进程名，roudi 检查是否已存在。   重启处理   若存在同名进程，说明旧进程重启：">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第五周进度">
 <meta property="og:url" content="http://example.com/week-progress/my_iceoryx/w5/index.html">
 <meta property="og:site_name" content="Hexo">
-<meta property="og:description" content="【2025.09.15 ～ 2025.09.21】 复刻进度总结 当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。 1.进程注册· 实现：        · roudi维护了一个进程集合。（这个不存储在共享内存中）        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。                · 若存在，说明旧进程">
+<meta property="og:description" content="【2025.09.15 ～ 2025.09.21】Iceoryx 复刻进度总结 当前目标：聚焦 注册模块 的实现，围绕 进程注册、内存分块细化、共享内存注册 三个方向推进。   1️⃣ 进程注册✅ 实现 进程集合维护   roudi 维护一个进程集合（不存储在共享内存中）。   pub&#x2F;sub 初始化时会上报进程名，roudi 检查是否已存在。   重启处理   若存在同名进程，说明旧进程重启：">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-09-21T14:22:00.000Z">
-<meta property="article:modified_time" content="2025-09-22T08:38:23.349Z">
+<meta property="article:modified_time" content="2025-09-22T11:21:21.571Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -95,16 +95,129 @@
     
     <div class="e-content article-entry" itemprop="articleBody">
       
-        <p>【2025.09.15 ～ 2025.09.21】 复刻进度总结</p>
-<p>当前目标：聚焦·注册模块·的实现，围绕进程注册、内存分块细化、共享内存注册三个方向推进。</p>
-<p>1.进程注册<br>· 实现：<br>        · roudi维护了一个进程集合。（这个不存储在共享内存中）<br>        · pub&#x2F;sub初始化时会上报进程名，roudi检查是否已存在。<br>                · 若存在，说明旧进程重启了，需要先执行清理操作（目前没有XD，应该还不需要…，但是我象征性的先删除&#x3D;。&#x3D;），再加入集合。</p>
-<p>2.内存分块细分<br>· 我的实现：<br>        · pub&#x2F;sub不直接感知共享内存名<br>        · 注册阶段，roudi通过ipc返回 sgementId -&gt; shmName的映射关系。<br>        Ps：这不是完全解偶吗？<br>· Iceoryx设计：<br>        · 所有映射关系存储在一个指定的共享内存中，该共享内存由“managment” + 域名拼接而成<br>        · pub&#x2F;sub注册后，从该共享内存直接读取映射关系。<br>· FromAI：<br>        ·我的方案：<br>                · 优点：解偶 + 简单<br>                · 缺点：<br>                        · IPC开销：伴随着进程数量的增加，IPC可能成为性能瓶颈。<br>                        · 实时性和一致性：如果roudi重启，所有客户端需要重新获取映射关系，并且通过IPC映射信息，保证即使最新、一致。<br>        · iceoryx设计：<br>                · 优点：（好呀，好呀，只说优点是吧）<br>                        · 极致性能：一旦客户端通过IPC注册成功，它可以直接从共享内存中读取所有映射关系，无需再次通信。共享内存的速度远远快于IPC。<br>                        · 伸缩性：性能不会随着进程数的增加而降低。<br>                        · 状态一致性：天然的状态一致性。        &#x2F;&#x2F; 这个应该不会体现吧，因为Iceoryx好像不会动态变化吧，roudi重启，会怎么样呢？</p>
-<p>3.共享内存注册<br>该模块主要包含两个核心功能：<br>（1） SharedMemoryUser类<br>· 功能：pub&#x2F;sub通过该类构建共享内存映射关系<br>· 改进：<br>        · 自己实现的SharedMemoryUser接口和作用与Iceoryx还是又差别的，我觉得一方面是因为源码设计优秀，一方面我认为是我有的功能还没有实现。不过我能理解Iceoryx这么设计的原因。<br>        · 在之前共享内存相关类中增加了AccessMode和OpenMode参数，代码复用性显著提升。<br>        · 实现了简易的ScopeGuard（RAII）<br>                · 功能：用于在函数退出前优雅的执行清理逻辑<br>                · 优点：<br>                        · 减少代码冗余<br>                        · 避免遗漏关键操作<br>                · 思考：<br>                        · Iceoryx的ScopeGuard基于栈分配，这不是唯一一个栈分配，设计很高效。todo. 等我核心流程跑通后，我将研究该细节。<br>（2） 指针仓库<br>        · 功能：维护 segmentId -&gt; shm 的映射关系，用于统一管理已打开的共享内存，避免重复映射？<br>        · 接口返回值抉择的思考：<br>                · bool：用于简单的，错误分支有限的场景。<br>                · optional：用于”有或无”的返回值（比如返回类的指针成员？）<br>                · expected：适用于有多种错误，并需要返回详细错误的情况。<br>        · 思考：<br>                · 为什么引入 segmentId ？直接通过名字有什么问题吗？应该都行吧。<br>                From AI：<br>                        · 解偶，如果底层实现从共享内存切换到其他IPC机制时，segmentId仍可作为统一的标识符，无需修改上层代码。<br>                        · 简化：整数ID比处理一个冗长的文件名简单<br>                        · 安全：特殊字符、攻击、伪造&#x2F;冲突。<br>4.todo<br>· 在每一个chunk中，引入内存池。<br>· 设计pub&#x2F;sub信息存储方案，确保后续匹配与注销操作高效与可扩展。<br>Ps：虽然整理架构已清晰，但感觉“差的不多，又差很多”😂，争取本月完成注册模块。</p>
+        <h1 id="【2025-09-15-～-2025-09-21】Iceoryx-复刻进度总结"><a href="#【2025-09-15-～-2025-09-21】Iceoryx-复刻进度总结" class="headerlink" title="【2025.09.15 ～ 2025.09.21】Iceoryx 复刻进度总结"></a>【2025.09.15 ～ 2025.09.21】Iceoryx 复刻进度总结</h1><blockquote>
+<p><strong>当前目标</strong>：聚焦 <strong>注册模块</strong> 的实现，围绕 <strong>进程注册</strong>、<strong>内存分块细化</strong>、<strong>共享内存注册</strong> 三个方向推进。</p>
+</blockquote>
+<hr>
+<h2 id="1️⃣-进程注册"><a href="#1️⃣-进程注册" class="headerlink" title="1️⃣ 进程注册"></a>1️⃣ 进程注册</h2><h3 id="✅-实现"><a href="#✅-实现" class="headerlink" title="✅ 实现"></a>✅ 实现</h3><ul>
+<li><strong>进程集合维护</strong>  <ul>
+<li><code>roudi</code> 维护一个进程集合（不存储在共享内存中）。  </li>
+<li><code>pub/sub</code> 初始化时会上报进程名，<code>roudi</code> 检查是否已存在。</li>
+</ul>
+</li>
+<li><strong>重启处理</strong>  <ul>
+<li>若存在同名进程，说明旧进程重启：<ul>
+<li>先执行清理操作（当前版本仅象征性删除）</li>
+<li>再加入集合</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="2️⃣-内存分块细分"><a href="#2️⃣-内存分块细分" class="headerlink" title="2️⃣ 内存分块细分"></a>2️⃣ 内存分块细分</h2><h3 id="🧩-我的实现"><a href="#🧩-我的实现" class="headerlink" title="🧩 我的实现"></a>🧩 我的实现</h3><ul>
+<li><code>pub/sub</code> <strong>不直接感知共享内存名</strong>  </li>
+<li>注册阶段由 <code>roudi</code> 通过 IPC 返回 <code>segmentId -&gt; shmName</code> 的映射关系  </li>
+<li>✅ 优点：<strong>解耦 + 简单</strong></li>
+</ul>
+<h3 id="🧊-Iceoryx-设计"><a href="#🧊-Iceoryx-设计" class="headerlink" title="🧊 Iceoryx 设计"></a>🧊 Iceoryx 设计</h3><ul>
+<li>所有映射关系存储在一个指定的共享内存中</li>
+<li>共享内存命名：<code>management</code> + 域名</li>
+<li><code>pub/sub</code> 注册后可直接从共享内存读取映射关系</li>
+</ul>
+<h3 id="💡-对比分析"><a href="#💡-对比分析" class="headerlink" title="💡 对比分析"></a>💡 对比分析</h3><table>
+<thead>
+<tr>
+<th>方案</th>
+<th>优点</th>
+<th>缺点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>我的方案</strong></td>
+<td>解耦、简单</td>
+<td>- IPC 开销随进程数增加可能成为性能瓶颈<br>- <code>roudi</code> 重启后，客户端需重新获取映射关系</td>
+</tr>
+<tr>
+<td><strong>Iceoryx</strong></td>
+<td>- 极致性能：注册后直接从共享内存读取，速度远快于 IPC<br>- 伸缩性强：性能不随进程数增加而下降<br>- 状态一致性天然保证</td>
+<td>- 设计复杂度更高</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>❓ 备注：Iceoryx 似乎不会频繁动态变化，那 <code>roudi</code> 重启后状态一致性如何保证？后续待验证。</p>
+</blockquote>
+<hr>
+<h2 id="3️⃣-共享内存注册"><a href="#3️⃣-共享内存注册" class="headerlink" title="3️⃣ 共享内存注册"></a>3️⃣ 共享内存注册</h2><p>该模块包含 <strong>SharedMemoryUser</strong> 和 <strong>指针仓库</strong> 两个核心功能。</p>
+<h3 id="1-SharedMemoryUser-类"><a href="#1-SharedMemoryUser-类" class="headerlink" title="(1) SharedMemoryUser 类"></a>(1) SharedMemoryUser 类</h3><ul>
+<li><strong>功能</strong>：<code>pub/sub</code> 通过该类构建共享内存映射关系</li>
+<li><strong>改进与思考</strong>：<ul>
+<li>自己实现的接口与 Iceoryx 存在差异  <ul>
+<li>部分源于 Iceoryx 的优秀设计</li>
+<li>也因我尚未实现全部功能</li>
+</ul>
+</li>
+<li>在共享内存相关类中增加 <strong>AccessMode</strong> 和 <strong>OpenMode</strong> 参数 → <strong>复用性提升</strong></li>
+<li>实现简易 <strong>ScopeGuard（RAII）</strong><ul>
+<li>✅ 优点：<ul>
+<li>减少代码冗余</li>
+<li>避免遗漏关键清理操作</li>
+</ul>
+</li>
+<li>💡 思考：<ul>
+<li>Iceoryx 的 ScopeGuard 基于栈分配 → 设计高效</li>
+<li>待核心流程跑通后深入研究</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="2-指针仓库"><a href="#2-指针仓库" class="headerlink" title="(2) 指针仓库"></a>(2) 指针仓库</h3><ul>
+<li><strong>功能</strong>：维护 <code>segmentId -&gt; shm</code> 的映射关系，统一管理已打开的共享内存，避免重复映射</li>
+<li><strong>接口返回值设计</strong>：<table>
+<thead>
+<tr>
+<th>返回值</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>bool</code></td>
+<td>简单、错误分支有限</td>
+</tr>
+<tr>
+<td><code>optional</code></td>
+<td>“有或无”的场景（例如类指针成员）</td>
+</tr>
+<tr>
+<td><code>expected</code></td>
+<td>错误种类多、需返回详细错误</td>
+</tr>
+</tbody></table>
+</li>
+<li><strong>思考：为什么引入 segmentId，而不是直接使用名字？</strong><ul>
+<li><strong>解耦</strong>：若底层从共享内存切换到其他 IPC 机制，<code>segmentId</code> 仍可作为统一标识符</li>
+<li><strong>简化</strong>：整数 ID 处理更高效</li>
+<li><strong>安全</strong>：避免特殊字符、攻击或命名冲突</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="4️⃣-TODO"><a href="#4️⃣-TODO" class="headerlink" title="4️⃣ TODO"></a>4️⃣ TODO</h2><ul>
+<li>在每一个 <code>chunk</code> 中引入<strong>内存池</strong>。</li>
+<li>设计 <strong>pub&#x2F;sub 信息存储方案</strong>，确保匹配与注销操作的<strong>高效与可扩展</strong>。</li>
+</ul>
+<hr>
+<h2 id="✍-小结"><a href="#✍-小结" class="headerlink" title="✍ 小结"></a>✍ 小结</h2><blockquote>
+<p>架构整理已较为清晰，但依然有“<strong>差的不多，又差很多</strong>”的感觉。<br>目标：<strong>争取本月完成注册模块</strong> 💪</p>
+</blockquote>
 
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w5/" data-id="cmfuvl3mh0007m6q924cmez6q" data-title="第五周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w5/" data-id="cmfv1ftg90007mtq98zaw8dsi" data-title="第五周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
