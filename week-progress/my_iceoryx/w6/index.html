@@ -14,7 +14,7 @@
 <meta property="og:description" content="【2025.09.06 ~ 2025.10.11】复刻项目进展总结 本周重点是对比 Iceoryx 设计 - 国庆快乐 🎉 (*￣︶￣)   1️⃣ 引入配置类· 新增 SegmentConfig 与 MepooConfig，用于统一管理 Segment 和内存池的参数配置，提升可维护性和灵活性。  2️⃣ 功能剥离与结构重构· 将 segment 相关逻辑从 SegmentManager 中抽">
 <meta property="og:locale" content="en_US">
 <meta property="article:published_time" content="2025-10-11T14:22:00.000Z">
-<meta property="article:modified_time" content="2025-10-11T02:58:58.383Z">
+<meta property="article:modified_time" content="2025-10-11T03:02:07.344Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
   
@@ -103,7 +103,7 @@
 <hr>
 <h2 id="2️⃣-功能剥离与结构重构"><a href="#2️⃣-功能剥离与结构重构" class="headerlink" title="2️⃣ 功能剥离与结构重构"></a>2️⃣ 功能剥离与结构重构</h2><p>· 将 segment 相关逻辑从 <strong>SegmentManager</strong> 中抽离到独立类 <strong>MepooSegment</strong>，实现更清晰的职责划分。</p>
 <h3 id="🌱-主要收益："><a href="#🌱-主要收益：" class="headerlink" title="🌱 主要收益："></a>🌱 主要收益：</h3><ul>
-<li><strong>可扩展性（开闭原则）</strong><br>Ps：如果将 MepooSegment 的两个模板参数直接给 SegmentManager 是否可以满足开闭原则？</li>
+<li><strong>可扩展性（开闭原则）</strong><br>Ps：如果将 MepooSegment 的两个模板参数直接给 SegmentManager 是否可以满足开闭原则？<br>FromAI：<br>  缺点模板污染，容易导致SegmentManager耦合MepooSegment的业务逻辑，不利于扩展。<br>  不必要重编译：修改Config的配置项，这种方案需要重新编译SegmentManager，但是Iceoryx方案仅需要编译MepooSegment（有区别吗？难道因为MepooSegment范围更小，理论上重编内容更少？）</li>
 <li><strong>单一职责原则</strong><br>SegmentManager 专注于 segment 的生命周期管理，MepooSegment 专注于 segment 的具体构建逻辑，减少较差依赖与代码污染。</li>
 <li><strong>RAII 管理优化</strong><br>MepooSegment 的引入使 Segment 生命周期的管理更加自动化与安全。</li>
 </ul>
@@ -118,7 +118,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w6/" data-id="cmglos8l20008deq98svidk80" data-title="第六周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w6/" data-id="cmglow9l00008mbq9fkxjdbrw" data-title="第六周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       

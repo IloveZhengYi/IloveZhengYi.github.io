@@ -101,7 +101,7 @@
 <hr>
 <h2 id="2️⃣-功能剥离与结构重构"><a href="#2️⃣-功能剥离与结构重构" class="headerlink" title="2️⃣ 功能剥离与结构重构"></a>2️⃣ 功能剥离与结构重构</h2><p>· 将 segment 相关逻辑从 <strong>SegmentManager</strong> 中抽离到独立类 <strong>MepooSegment</strong>，实现更清晰的职责划分。</p>
 <h3 id="🌱-主要收益："><a href="#🌱-主要收益：" class="headerlink" title="🌱 主要收益："></a>🌱 主要收益：</h3><ul>
-<li><strong>可扩展性（开闭原则）</strong><br>Ps：如果将 MepooSegment 的两个模板参数直接给 SegmentManager 是否可以满足开闭原则？</li>
+<li><strong>可扩展性（开闭原则）</strong><br>Ps：如果将 MepooSegment 的两个模板参数直接给 SegmentManager 是否可以满足开闭原则？<br>FromAI：<br>  缺点模板污染，容易导致SegmentManager耦合MepooSegment的业务逻辑，不利于扩展。<br>  不必要重编译：修改Config的配置项，这种方案需要重新编译SegmentManager，但是Iceoryx方案仅需要编译MepooSegment（有区别吗？难道因为MepooSegment范围更小，理论上重编内容更少？）</li>
 <li><strong>单一职责原则</strong><br>SegmentManager 专注于 segment 的生命周期管理，MepooSegment 专注于 segment 的具体构建逻辑，减少较差依赖与代码污染。</li>
 <li><strong>RAII 管理优化</strong><br>MepooSegment 的引入使 Segment 生命周期的管理更加自动化与安全。</li>
 </ul>
@@ -116,7 +116,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w6/" data-id="cmglos8l20008deq98svidk80" data-title="第六周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w6/" data-id="cmglow9l00008mbq9fkxjdbrw" data-title="第六周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -272,7 +272,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w5/" data-id="cmglos8l10007deq94ose97kw" data-title="第五周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w5/" data-id="cmglow9kz0007mbq90c7g4855" data-title="第五周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -395,7 +395,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w4/" data-id="cmglos8l00006deq9a9q79j5x" data-title="第四周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w4/" data-id="cmglow9ky0006mbq928kofld6" data-title="第四周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -510,7 +510,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w3/" data-id="cmglos8kz0005deq97tim2p7l" data-title="第三周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w3/" data-id="cmglow9kx0005mbq9hrvzhjie" data-title="第三周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -589,7 +589,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w2/" data-id="cmglos8ky0004deq997o21xnk" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w2/" data-id="cmglow9kw0004mbq9dai2d0sm" data-title="第二周进度" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -629,7 +629,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/problem/" data-id="cmglos8ko0000deq92gtb5s65" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/problem/" data-id="cmglow9km0000mbq901jye9wv" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -679,7 +679,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/list/" data-id="cmglos8kw0002deq95tw7dgby" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/list/" data-id="cmglow9ku0002mbq99l7v8ea6" data-title="list" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -730,7 +730,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmglos8ks0001deq9armg80pk" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/2025/08/18/hello-world/" data-id="cmglow9kq0001mbq91mdmevh6" data-title="Hello World" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
@@ -796,7 +796,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://example.com/week-progress/my_iceoryx/w1/" data-id="cmglos8kx0003deq9hc6y4dr3" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
+      <a data-url="http://example.com/week-progress/my_iceoryx/w1/" data-id="cmglow9kv0003mbq9hs8i3i4x" data-title="第一周进展" class="article-share-link"><span class="fa fa-share">Share</span></a>
       
       
       
